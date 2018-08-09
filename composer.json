@@ -1,0 +1,13 @@
+{
+    "name": "okzapradhana/with-her",
+    "description": "Bot to inform weather based on openweather API",
+    "authors": [
+        {
+            "name": "okzapradhana",
+            "email": "okzamahendra29@gmail.com"
+        }
+    ],
+    "require": {
+        "google/cloud-dialogflow": "^0.3.2"
+    }
+}
