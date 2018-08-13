@@ -219,24 +219,52 @@ class Linebot {
 			curl_close($curl);
 			$responseDecoded = json_decode($response);
 			$tempInString = (string) $responseDecoded->main->temp;
+			error_log($tempInString);
 			$text = "Suhu di " .$responseDecoded->name . " saat ini: " . $tempInString . " °C";
 			$title = "Cuaca di " . $responseDecoded->name;
-			$json = '{
-				"type": "buttons",
-				"imageBackgroundColor": "#FFFFFF",
-				"title": "' . $title . '",
-				"text": "' . $text .'",
-				"actions": [
-						{  
-							"type":"message",
-							"label":"Terimakasih!",
-							"text":"Wah! makasih"
-						}
-				]
-			}';
-			// $this->replyUsingText("Suhu di " . $responseDecoded->name . " saat ini: " .$tempInString . " C");
-			$this->replyUsingButtonTemplate($text, $json);
-
+			$arrayResponse = array(
+				"source" => $update["responseId"],
+				"fulfillmentText"=>$text,
+				"payload" => array(
+					"data"=> array(
+						"line" => array (
+							'type' => 'template',
+							'altText' => 'this is a buttons template',
+							'template' => 
+							array (
+								'type' => 'buttons',
+								'thumbnailImageUrl' => 'https://example.com/bot/images/image.jpg',
+								'title' => 'Menu',
+								'text' => 'Please select',
+								'actions' => 
+								array (
+									0 => 
+									array (
+										'type' => 'postback',
+										'label' => 'Buy',
+										'data' => 'action=buy&itemid=123',
+									),
+									1 => 
+									array (
+										'type' => 'postback',
+										'label' => 'Add to cart',
+										'data' => 'action=add&itemid=123',
+									),
+									2 => 
+									array (
+										'type' => 'uri',
+										'label' => 'View detail',
+										'uri' => 'http://example.com/page/123',
+										),
+									),
+								),
+							),
+						),
+						),
+					);
+			error_log(json_encode($this->webhookEventObject));
+			error_log(json_encode($arrayResponse));
+			echo json_encode($arrayResponse);
 		}		
 	}
 
