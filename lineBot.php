@@ -24,6 +24,7 @@ class Linebot {
 		$this->webhookEventObject = json_decode($this->webhookResponse, true);
 	}
 	
+	/*Using PHP and LINE WEBHOOK*/
 	private function httpPost($api,$body){
 		$ch = curl_init($api); 
 		curl_setopt($ch, CURLOPT_POST, true); 
@@ -150,6 +151,7 @@ class Linebot {
 		return $groupId;
 	}
 
+	
 	public function getWeatherBasedOnCityName($cityName){
 
 		$curl = curl_init();
@@ -192,6 +194,38 @@ class Linebot {
 		$this->replyUsingButtonTemplate($text, $json);
 	}
 
+	public function getUserName($userId){
+		$curl = curl_init();
+
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => "https://api.line.me/v2/bot/profile/" . $userId,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "GET",
+			CURLOPT_HTTPHEADER => array(
+				"Authorization: Bearer W1yPDkFgGLAQGVeoD5KxzCKJ7Dh8v3ulaBFrZiZHmQQJ5XSRibF72VloI3TbKu+agQp5zkM7qb+HxSQQNPJhChECs3qqppPjtQbwhK7jF23GYFoKRyXwgUaOrkkrMVpM4jxGeoNvuQNgIpbo1/sivQdB04t89/1O/w1cDnyilFU=",
+				"Cache-Control: no-cache",
+				"Postman-Token: 90611f09-abb4-4773-a90c-5b5914152b5a"
+			),
+		));
+
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
+		curl_close($curl);
+		
+		$responseDecoded = json_decode($response);
+		$userDisplayName = $responseDecoded->displayName;
+		return $userDisplayName;
+	}
+	
+	/*END*/
+
+
+
+	/*Using Dialogflow and DL Webhook*/
 	public function processMessageUsingDialogFlow($update){
 		if($update["queryResult"]["action"] == "weather"){
 			$cityName = $update["queryResult"]["parameters"]["geo-city"];
@@ -224,74 +258,50 @@ class Linebot {
 			$title = "Cuaca di " . $responseDecoded->name;
 			$arrayResponse = array(
 				"source" => $update["responseId"],
-				"fulfillmentText"=>$text,
-				"payload" => array(
-					"data"=> array(
-						"line" => array (
-							'type' => 'template',
-							'altText' => 'this is a buttons template',
-							'template' => 
+				"fulfillmentText"=> "Hi!",
+				'fulfillmentMessages' => 
+					array (
+						0 => 
+						array (
+							'text' => 
 							array (
-								'type' => 'buttons',
-								'thumbnailImageUrl' => 'https://example.com/bot/images/image.jpg',
-								'title' => 'Menu',
-								'text' => 'Please select',
-								'actions' => 
+								'text' => 
 								array (
-									0 => 
+									0 => 'Ini hasilnya cuaca di ' . $cityName,
+								),
+							),
+						),
+						1 => 
+						array (
+							'payload' => 
+							array (
+								'line' => 
+								array (
+									'type' => 'template',
+									'altText' => 'Cuaca di ' . $cityName,
+									'template' => 
 									array (
-										'type' => 'postback',
-										'label' => 'Buy',
-										'data' => 'action=buy&itemid=123',
-									),
-									1 => 
-									array (
-										'type' => 'postback',
-										'label' => 'Add to cart',
-										'data' => 'action=add&itemid=123',
-									),
-									2 => 
-									array (
-										'type' => 'uri',
-										'label' => 'View detail',
-										'uri' => 'http://example.com/page/123',
+										'type' => 'buttons',
+										'title' => $title,
+										'text' => $text,
+										'actions' => 
+										array (
+											0 => 
+											array (
+												'type' => 'message',
+												'label' => 'Terimakasih',
+												'text' => 'Arigatou!'
+											),
 										),
 									),
 								),
 							),
 						),
-						),
-					);
+					),
+				);
 			error_log(json_encode($this->webhookEventObject));
 			error_log(json_encode($arrayResponse));
-			echo json_encode($arrayResponse);
+			echo (json_encode($arrayResponse));
 		}		
-	}
-
-	public function getUserName($userId){
-		$curl = curl_init();
-
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => "https://api.line.me/v2/bot/profile/" . $userId,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => "",
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 30,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => "GET",
-			CURLOPT_HTTPHEADER => array(
-				"Authorization: Bearer W1yPDkFgGLAQGVeoD5KxzCKJ7Dh8v3ulaBFrZiZHmQQJ5XSRibF72VloI3TbKu+agQp5zkM7qb+HxSQQNPJhChECs3qqppPjtQbwhK7jF23GYFoKRyXwgUaOrkkrMVpM4jxGeoNvuQNgIpbo1/sivQdB04t89/1O/w1cDnyilFU=",
-				"Cache-Control: no-cache",
-				"Postman-Token: 90611f09-abb4-4773-a90c-5b5914152b5a"
-			),
-		));
-
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-		curl_close($curl);
-		
-		$responseDecoded = json_decode($response);
-		$userDisplayName = $responseDecoded->displayName;
-		return $userDisplayName;
 	}
 }
